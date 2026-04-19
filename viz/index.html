@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pinna -- Conference Room DOA</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <aside id="sidebar">
+    <header class="sidebar-header">
+      <h1>Pinna</h1>
+      <div class="status-row">
+        <span id="conn-dot" class="dot"></span>
+        <span id="conn-label">connecting...</span>
+      </div>
+    </header>
+
+    <div class="tab-bar" id="tab-bar" role="tablist">
+      <button type="button" class="tab-btn active" id="tab-btn-controls"
+              data-tab="controls" role="tab" aria-selected="true">Controls</button>
+      <button type="button" class="tab-btn" id="tab-btn-transcript"
+              data-tab="transcript" role="tab" aria-selected="false">Transcript</button>
+    </div>
+
+    <div id="tab-controls" class="tab-panel">
+      <div class="sensitivity-panel" id="sensitivity-panel">
+        <div class="sensitivity-header">
+          <span class="sensitivity-label">Sensitivity</span>
+          <span class="sensitivity-readout">
+            <span id="rms-live">0</span>
+            <span class="rms-sep">/</span>
+            <span id="rms-threshold">120</span>
+          </span>
+        </div>
+        <input type="range" id="sensitivity-slider" min="0" max="2000" step="10" value="120">
+        <div class="sensitivity-hint">
+          <span>show everything</span>
+          <span>loud only</span>
+        </div>
+      </div>
+
+      <div class="calibrate-panel" id="calibrate-panel">
+        <div class="calibrate-title-row">Calibrate</div>
+        <div class="calibrate-manual-row">
+          <label class="calibrate-manual-field" for="calibrate-offset-input">
+            <span class="calibrate-manual-label">Offset</span>
+            <span class="calibrate-manual-input-wrap">
+              <input type="number" id="calibrate-offset-input"
+                     class="calibrate-offset-input"
+                     min="0" max="359" step="1" value="0"
+                     inputmode="numeric" autocomplete="off">
+              <span class="calibrate-deg-unit">&deg;</span>
+            </span>
+          </label>
+          <label class="calibrate-mirror-field" for="calibrate-mirror">
+            <input type="checkbox" id="calibrate-mirror" class="calibrate-mirror">
+            <span>Mirror beams</span>
+          </label>
+        </div>
+        <div class="calibrate-actions-row">
+          <button type="button" id="calibrate-btn" class="calibrate-btn">Auto Calibrate</button>
+          <div class="calibrate-status">
+            <span class="calibrate-offset-label">Applied:</span>
+            <span id="calibrate-offset">0&deg;</span>
+            <a href="#" id="calibrate-reset" class="calibrate-reset">Reset</a>
+          </div>
+        </div>
+      </div>
+
+      <details class="beams-panel" id="beams-panel" open>
+        <summary class="beams-summary">Beams</summary>
+        <div class="beams-list" id="beams-list"></div>
+      </details>
+
+      <div class="keyword-panel" id="keyword-panel">
+        <div class="keyword-label">Alerts on:</div>
+        <div class="keyword-list" id="keyword-list"></div>
+        <div class="keyword-add">
+          <input type="text" id="keyword-input" class="keyword-input"
+                 placeholder="add keyword" autocomplete="off" maxlength="64">
+          <button type="button" id="keyword-add-btn" class="keyword-add-btn">+ Add</button>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="speaker-legend" id="speaker-legend"></div>
+      </div>
+    </div>
+
+    <div id="tab-transcript" class="tab-panel hidden">
+      <div id="transcript-container">
+        <div id="transcript"></div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="speaker-legend" id="speaker-legend-transcript"></div>
+      </div>
+    </div>
+  </aside>
+
+  <main id="stage">
+    <div id="canvas-wrap">
+      <img id="floorplan" src="assets/confroom.png" alt="conference room floor plan">
+      <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+    </div>
+    <div class="stage-footer">
+      <div class="beam-readout" id="beam-readout"></div>
+    </div>
+  </main>
+
+  <audio id="keyword-audio" preload="auto"></audio>
+
+  <div id="calibrate-overlay" class="calibrate-overlay hidden" role="dialog" aria-hidden="true">
+    <div class="calibrate-card">
+      <div class="calibrate-title" id="calibrate-title">Calibrate</div>
+      <div class="calibrate-body" id="calibrate-body">
+        Calibration step 1/2: Click the floor plan where you'll make a noise, then clap.
+      </div>
+      <div class="calibrate-count" id="calibrate-count"></div>
+      <div class="calibrate-hint" id="calibrate-hint">Press Esc to abort.</div>
+      <button type="button" id="calibrate-cancel" class="calibrate-cancel">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
