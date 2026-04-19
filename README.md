@@ -1,6 +1,6 @@
 # Pinna
 
-Live spatial audio + speech-to-text demo on a $70 dev board, running 100% local on Apple Silicon.
+Live spatial audio + speech-to-text demo on a $40 dev board, running 100% local on Apple Silicon.
 
 ![demo](demo.gif)
 
@@ -10,7 +10,7 @@ Named after the outer ear -- the structure that captures and directs sound.
 
 ## Why this exists
 
-The XVF3800 is a great little dev board with one frustrating gap: the official docs and most Python examples reference an old USB control protocol that doesn't work on current firmware. Anybody trying to wire it into a custom pipeline hits the same I/O error and gives up. This repo documents the working protocol (vendor control transfer, command 75, retry-on-busy) and shows what you can build once you have the angles flowing.
+The XVF3800 is a great little $40 dev board with one frustrating gap: the official docs and most Python examples reference an old USB control protocol that doesn't work on current firmware. Anybody trying to wire it into a custom pipeline hits the same I/O error and gives up. This repo documents the working protocol (vendor control transfer, command 75, retry-on-busy) and shows what you can build once you have the angles flowing.
 
 ## Hardware
 
