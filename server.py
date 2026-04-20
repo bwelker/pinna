@@ -74,17 +74,17 @@ VAD_FRAME_SAMPLES = 512
 VAD_FRAME_MS = VAD_FRAME_SAMPLES * 1000 // SAMPLE_RATE  # 32 ms
 
 # Probability threshold for a frame to count as speech.
-VAD_SPEECH_THRESHOLD = 0.5
+VAD_SPEECH_THRESHOLD = 0.25
 
-# Consecutive speech frames required before committing to an utterance (~128 ms).
-VAD_MIN_SPEECH_FRAMES = 4
+# Consecutive speech frames required before committing to an utterance (~64 ms).
+VAD_MIN_SPEECH_FRAMES = 2
 
 # Consecutive silence frames required to close an utterance (~640 ms pause).
 VAD_MIN_SILENCE_FRAMES = 20
 
 # Pad this many frames of pre-speech audio into the utterance so onsets
-# are not clipped (~800 ms -- covers the detection delay plus soft onsets).
-VAD_PADDING_FRAMES_BEFORE = 25
+# are not clipped (~1.12 s -- covers the detection delay plus soft onsets).
+VAD_PADDING_FRAMES_BEFORE = 35
 
 # Pad this many frames of trailing audio after speech ends (~160 ms).
 VAD_PADDING_FRAMES_AFTER = 5
@@ -103,6 +103,7 @@ SILENCE_RMS_THRESHOLD = 120.0
 RUNTIME_CONFIG = {
     "rms_threshold": SILENCE_RMS_THRESHOLD,
     "min_beam_energy": 0.0,
+    "vad_threshold": VAD_SPEECH_THRESHOLD,
 }
 _CONFIG_LOCK = threading.Lock()
 
@@ -493,7 +494,7 @@ class LiveCapture(threading.Thread):
                     print(f"[vad] frame eval error: {e}", file=sys.stderr)
                     prob = 0.0
 
-                is_speech = prob >= VAD_SPEECH_THRESHOLD
+                is_speech = prob >= get_runtime_config()["vad_threshold"]
 
                 if state == "silence":
                     # Maintain pre-roll of recent frames for onset padding.
@@ -698,6 +699,8 @@ async def ws_handler(websocket, bus):
                         updates["rms_threshold"] = msg["rms_threshold"]
                     if "min_beam_energy" in msg:
                         updates["min_beam_energy"] = msg["min_beam_energy"]
+                    if "vad_threshold" in msg:
+                        updates["vad_threshold"] = msg["vad_threshold"]
                     if updates:
                         new_cfg = update_runtime_config(**updates)
                         print(f"[config] updated via {peer}: {new_cfg}")

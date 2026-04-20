@@ -41,6 +41,20 @@
         </div>
       </div>
 
+      <div class="sensitivity-panel" id="vad-panel">
+        <div class="sensitivity-header">
+          <span class="sensitivity-label">VAD Sensitivity</span>
+          <span class="sensitivity-readout">
+            <span id="vad-threshold-readout">0.25</span>
+          </span>
+        </div>
+        <input type="range" id="vad-slider" min="0.05" max="0.95" step="0.05" value="0.25">
+        <div class="sensitivity-hint">
+          <span>catch whispers</span>
+          <span>loud speech only</span>
+        </div>
+      </div>
+
       <div class="calibrate-panel" id="calibrate-panel">
         <div class="calibrate-title-row">Calibrate</div>
         <div class="calibrate-manual-row">

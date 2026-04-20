@@ -57,6 +57,7 @@ const DEAD_ZONE_DEG = 3.0;
 
 // localStorage keys
 const LS_KEY_SENSITIVITY = "pinna:rms_threshold";
+const LS_KEY_VAD_THRESHOLD = "pinna:vad_threshold";
 const LS_KEY_BEAM_ENABLED = "pinna:beams_enabled";   // {beam1:bool,...}
 const LS_KEY_HEADING_OFFSET = "pinna:heading_offset_deg";
 const LS_KEY_HANDEDNESS = "pinna:handedness";        // +1 or -1
@@ -76,6 +77,7 @@ let reconnectTimer = null;
 
 // Sensitivity slider state
 let rmsThreshold = 120;
+let vadThreshold = 0.25;
 let latestRms = 0;
 // Rolling window of recent RMS samples -- used to fade the beams when the
 // room has been quiet for a stretch.
@@ -121,6 +123,8 @@ const floorplanEl = document.getElementById("floorplan");
 const overlaySvg = document.getElementById("overlay");
 const keywordAudioEl = document.getElementById("keyword-audio");
 const sensitivitySlider = document.getElementById("sensitivity-slider");
+const vadSlider = document.getElementById("vad-slider");
+const vadReadoutEl = document.getElementById("vad-threshold-readout");
 const rmsLiveEl = document.getElementById("rms-live");
 const rmsThresholdEl = document.getElementById("rms-threshold");
 const beamsListEl = document.getElementById("beams-list");
@@ -154,6 +158,26 @@ function initSensitivity() {
     if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
       sendConfig({ rms_threshold: rmsThreshold });
+    }, 100);
+  });
+}
+
+function initVadSlider() {
+  const stored = localStorage.getItem(LS_KEY_VAD_THRESHOLD);
+  if (stored != null && !Number.isNaN(Number(stored))) {
+    vadThreshold = Number(stored);
+  }
+  vadSlider.value = String(vadThreshold);
+  vadReadoutEl.textContent = vadThreshold.toFixed(2);
+
+  let debounceTimer = null;
+  vadSlider.addEventListener("input", () => {
+    vadThreshold = Number(vadSlider.value);
+    vadReadoutEl.textContent = vadThreshold.toFixed(2);
+    try { localStorage.setItem(LS_KEY_VAD_THRESHOLD, String(vadThreshold)); } catch {}
+    if (debounceTimer) clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      sendConfig({ vad_threshold: vadThreshold });
     }, 100);
   });
 }
@@ -536,6 +560,9 @@ function connect() {
     if (localStorage.getItem(LS_KEY_SENSITIVITY) != null) {
       sendConfig({ rms_threshold: rmsThreshold });
     }
+    if (localStorage.getItem(LS_KEY_VAD_THRESHOLD) != null) {
+      sendConfig({ vad_threshold: vadThreshold });
+    }
   });
 
   ws.addEventListener("message", (ev) => {
@@ -598,6 +625,15 @@ function handleEvent(msg) {
     } else if (typeof msg.rms_threshold === "number"
                && Number(sensitivitySlider.value) !== rmsThreshold) {
       sendConfig({ rms_threshold: rmsThreshold });
+    }
+    if (localStorage.getItem(LS_KEY_VAD_THRESHOLD) == null
+        && typeof msg.vad_threshold === "number") {
+      vadThreshold = msg.vad_threshold;
+      vadSlider.value = String(vadThreshold);
+      vadReadoutEl.textContent = vadThreshold.toFixed(2);
+    } else if (typeof msg.vad_threshold === "number"
+               && localStorage.getItem(LS_KEY_VAD_THRESHOLD) != null) {
+      sendConfig({ vad_threshold: vadThreshold });
     }
   } else if (msg.type === "config") {
     // Broadcast echo -- nothing to do for now.
@@ -1193,6 +1229,7 @@ loadBeamEnabled();
 loadHeadingOffset();
 loadKeywords();
 initSensitivity();
+initVadSlider();
 initManualCalibrateControls();
 renderKeywordChips();
 initKeywordInput();
